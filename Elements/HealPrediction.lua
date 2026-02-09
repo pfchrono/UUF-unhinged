@@ -8,28 +8,30 @@ local function CreateUnitAbsorbs(unitFrame, unit)
     local AbsorbBar = CreateFrame("StatusBar", frameName .. "_AbsorbBar", unitFrame.Health)
     if AbsorbDB.UseStripedTexture then AbsorbBar:SetStatusBarTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else AbsorbBar:SetStatusBarTexture(UUF.Media.Foreground) end
     AbsorbBar:SetStatusBarColor(AbsorbDB.Colour[1], AbsorbDB.Colour[2], AbsorbDB.Colour[3], AbsorbDB.Colour[4])
-    AbsorbBar:ClearAllPoints()
-    if AbsorbDB.Position == "RIGHT" then
-        AbsorbBar:SetPoint("TOPRIGHT", unitFrame.Health, "TOPRIGHT", 0, 0)
-        AbsorbBar:SetHeight(AbsorbDB.Height)
-        AbsorbBar:SetReverseFill(true)
-    elseif AbsorbDB.Position == "ATTACH" then
-        unitFrame.Health:SetClipsChildren(true)
-        if unitFrame.Health:GetReverseFill() then
-            AbsorbBar:SetPoint("TOPRIGHT", unitFrame.Health:GetStatusBarTexture(), "TOPLEFT", 0, 0)
+    UUF:QueueOrRun(function()
+        AbsorbBar:ClearAllPoints()
+        if AbsorbDB.Position == "RIGHT" then
+            AbsorbBar:SetPoint("TOPRIGHT", unitFrame.Health, "TOPRIGHT", 0, 0)
+            AbsorbBar:SetHeight(AbsorbDB.Height)
             AbsorbBar:SetReverseFill(true)
+        elseif AbsorbDB.Position == "ATTACH" then
+            unitFrame.Health:SetClipsChildren(true)
+            if unitFrame.Health:GetReverseFill() then
+                AbsorbBar:SetPoint("TOPRIGHT", unitFrame.Health:GetStatusBarTexture(), "TOPLEFT", 0, 0)
+                AbsorbBar:SetReverseFill(true)
+            else
+                AbsorbBar:SetPoint("TOPLEFT", unitFrame.Health:GetStatusBarTexture(), "TOPRIGHT", 0, 0)
+                AbsorbBar:SetReverseFill(false)
+            end
+            AbsorbBar:SetHeight(AbsorbDB.Height)
         else
-            AbsorbBar:SetPoint("TOPLEFT", unitFrame.Health:GetStatusBarTexture(), "TOPRIGHT", 0, 0)
+            AbsorbBar:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
+            AbsorbBar:SetHeight(AbsorbDB.Height)
             AbsorbBar:SetReverseFill(false)
         end
-        AbsorbBar:SetHeight(AbsorbDB.Height)
-    else
-        AbsorbBar:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
-        AbsorbBar:SetHeight(AbsorbDB.Height)
-        AbsorbBar:SetReverseFill(false)
-    end
-    AbsorbBar:SetFrameLevel(unitFrame.Health:GetFrameLevel() + 1)
-    AbsorbBar:Show()
+        AbsorbBar:SetFrameLevel(unitFrame.Health:GetFrameLevel() + 1)
+        AbsorbBar:Show()
+    end)
 
     return AbsorbBar
 end
@@ -42,28 +44,30 @@ local function CreateUnitHealAbsorbs(unitFrame, unit)
     local HealAbsorbBar = CreateFrame("StatusBar", frameName .. "_HealAbsorbBar", unitFrame.Health)
     if HealAbsorbDB.UseStripedTexture then HealAbsorbBar:SetStatusBarTexture("Interface\\AddOns\\UnhaltedUnitFrames\\Media\\Textures\\ThinStripes.png") else HealAbsorbBar:SetStatusBarTexture(UUF.Media.Foreground) end
     HealAbsorbBar:SetStatusBarColor(HealAbsorbDB.Colour[1], HealAbsorbDB.Colour[2], HealAbsorbDB.Colour[3], HealAbsorbDB.Colour[4])
-    HealAbsorbBar:ClearAllPoints()
-    if HealAbsorbDB.Position == "RIGHT" then
-        HealAbsorbBar:SetPoint("TOPRIGHT", unitFrame.Health, "TOPRIGHT", 0, 0)
-        HealAbsorbBar:SetHeight(HealAbsorbDB.Height)
-        HealAbsorbBar:SetReverseFill(true)
-    elseif HealAbsorbDB.Position == "ATTACH" then
-        unitFrame.Health:SetClipsChildren(true)
-        if unitFrame.Health:GetReverseFill() then
-            HealAbsorbBar:SetPoint("TOPRIGHT", unitFrame.Health:GetStatusBarTexture(), "TOPLEFT", 0, 0)
+    UUF:QueueOrRun(function()
+        HealAbsorbBar:ClearAllPoints()
+        if HealAbsorbDB.Position == "RIGHT" then
+            HealAbsorbBar:SetPoint("TOPRIGHT", unitFrame.Health, "TOPRIGHT", 0, 0)
+            HealAbsorbBar:SetHeight(HealAbsorbDB.Height)
             HealAbsorbBar:SetReverseFill(true)
+        elseif HealAbsorbDB.Position == "ATTACH" then
+            unitFrame.Health:SetClipsChildren(true)
+            if unitFrame.Health:GetReverseFill() then
+                HealAbsorbBar:SetPoint("TOPRIGHT", unitFrame.Health:GetStatusBarTexture(), "TOPLEFT", 0, 0)
+                HealAbsorbBar:SetReverseFill(true)
+            else
+                HealAbsorbBar:SetPoint("TOPLEFT", unitFrame.Health:GetStatusBarTexture(), "TOPRIGHT", 0, 0)
+                HealAbsorbBar:SetReverseFill(false)
+            end
+            HealAbsorbBar:SetHeight(HealAbsorbDB.Height)
         else
-            HealAbsorbBar:SetPoint("TOPLEFT", unitFrame.Health:GetStatusBarTexture(), "TOPRIGHT", 0, 0)
+            HealAbsorbBar:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
+            HealAbsorbBar:SetHeight(HealAbsorbDB.Height)
             HealAbsorbBar:SetReverseFill(false)
         end
-        HealAbsorbBar:SetHeight(HealAbsorbDB.Height)
-    else
-        HealAbsorbBar:SetPoint("TOPLEFT", unitFrame.Health, "TOPLEFT", 0, 0)
-        HealAbsorbBar:SetHeight(HealAbsorbDB.Height)
-        HealAbsorbBar:SetReverseFill(false)
-    end
-    HealAbsorbBar:SetFrameLevel(unitFrame.Health:GetFrameLevel() + 1)
-    HealAbsorbBar:Show()
+        HealAbsorbBar:SetFrameLevel(unitFrame.Health:GetFrameLevel() + 1)
+        HealAbsorbBar:Show()
+    end)
 
     return HealAbsorbBar
 end

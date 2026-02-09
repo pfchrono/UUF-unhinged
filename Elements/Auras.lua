@@ -256,10 +256,12 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         local buffRows = math.ceil(BuffsDB.Num / buffPerRow)
         local buffContainerWidth = (BuffsDB.Size + BuffsDB.Layout[5]) * buffPerRow - BuffsDB.Layout[5]
         local buffContainerHeight = (BuffsDB.Size + BuffsDB.Layout[5]) * buffRows - BuffsDB.Layout[5]
-        unitFrame.BuffContainer:ClearAllPoints()
-        unitFrame.BuffContainer:SetSize(buffContainerWidth, buffContainerHeight)
-        unitFrame.BuffContainer:SetPoint(BuffsDB.Layout[1], unitFrame, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
-        unitFrame.BuffContainer:SetFrameStrata(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.FrameStrata)
+        UUF:QueueOrRun(function()
+            unitFrame.BuffContainer:ClearAllPoints()
+            unitFrame.BuffContainer:SetSize(buffContainerWidth, buffContainerHeight)
+            unitFrame.BuffContainer:SetPoint(BuffsDB.Layout[1], unitFrame, BuffsDB.Layout[2], BuffsDB.Layout[3], BuffsDB.Layout[4])
+            unitFrame.BuffContainer:SetFrameStrata(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.FrameStrata)
+        end)
         unitFrame.BuffContainer.size = BuffsDB.Size
         unitFrame.BuffContainer.spacing = BuffsDB.Layout[5]
         unitFrame.BuffContainer.num = BuffsDB.Num
@@ -273,9 +275,9 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.BuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HELPFUL") end
         unitFrame.BuffContainer.showType = BuffsDB.ShowType
         unitFrame.BuffContainer.showBuffType = BuffsDB.ShowType
-        unitFrame.BuffContainer:Show()
+        UUF:QueueOrRun(function() unitFrame.BuffContainer:Show() end)
     else
-        unitFrame.BuffContainer:Hide()
+        UUF:QueueOrRun(function() unitFrame.BuffContainer:Hide() end)
         unitFrame.Buffs = nil
     end
 
@@ -285,10 +287,12 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         local debuffRows = math.ceil(DebuffsDB.Num / debuffPerRow)
         local debuffContainerWidth = (DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffPerRow - DebuffsDB.Layout[5]
         local debuffContainerHeight = (DebuffsDB.Size + DebuffsDB.Layout[5]) * debuffRows - DebuffsDB.Layout[5]
-        unitFrame.DebuffContainer:ClearAllPoints()
-        unitFrame.DebuffContainer:SetSize(debuffContainerWidth, debuffContainerHeight)
-        unitFrame.DebuffContainer:SetFrameStrata(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.FrameStrata)
-        unitFrame.DebuffContainer:SetPoint(DebuffsDB.Layout[1], unitFrame, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
+        UUF:QueueOrRun(function()
+            unitFrame.DebuffContainer:ClearAllPoints()
+            unitFrame.DebuffContainer:SetSize(debuffContainerWidth, debuffContainerHeight)
+            unitFrame.DebuffContainer:SetFrameStrata(UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras.FrameStrata)
+            unitFrame.DebuffContainer:SetPoint(DebuffsDB.Layout[1], unitFrame, DebuffsDB.Layout[2], DebuffsDB.Layout[3], DebuffsDB.Layout[4])
+        end)
         unitFrame.DebuffContainer.size = DebuffsDB.Size
         unitFrame.DebuffContainer.spacing = DebuffsDB.Layout[5]
         unitFrame.DebuffContainer.num = DebuffsDB.Num
@@ -302,9 +306,9 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         unitFrame.DebuffContainer.PostCreateButton = function(_, button) StyleAuras(_, button, unit, "HARMFUL") end
         unitFrame.DebuffContainer.showType = DebuffsDB.ShowType
         unitFrame.DebuffContainer.showDebuffType = DebuffsDB.ShowType
-        unitFrame.DebuffContainer:Show()
+        UUF:QueueOrRun(function() unitFrame.DebuffContainer:Show() end)
     else
-        unitFrame.DebuffContainer:Hide()
+        UUF:QueueOrRun(function() unitFrame.DebuffContainer:Hide() end)
         unitFrame.Debuffs = nil
     end
 
@@ -338,6 +342,7 @@ end
 
 function UUF:UpdateUnitAurasStrata(unit)
     if not unit then return end
+    if InCombatLockdown() then return end
     local normalizedUnit = UUF:GetNormalizedUnit(unit)
     local unitFrame = UUF[unit:upper()]
     local unitDB = UUF.db.profile.Units[normalizedUnit]

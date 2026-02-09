@@ -29,6 +29,32 @@ function UnhaltedUnitFrames:OnInitialize()
             UUF:CreateTestPartyFrames()
         end
     end)
+    local tempGuardianFrame = CreateFrame("Frame")
+    tempGuardianFrame:RegisterEvent("PLAYER_CONTROL_LOST")
+    tempGuardianFrame:RegisterEvent("PLAYER_CONTROL_GAINED")
+    tempGuardianFrame:RegisterEvent("COMPANION_UPDATE")
+    tempGuardianFrame:RegisterEvent("UNIT_PET")
+    tempGuardianFrame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+    tempGuardianFrame:SetScript("OnEvent", function()
+        -- Refresh pet frame when temporary guardians appear/disappear
+        if UUF.PET then
+            UUF:UpdateUnitFrame(UUF.PET, "pet")
+        end
+    end)
+    -- Safe-queue for deferred protected calls during combat lockdown
+    UUF._safeQueue = UUF._safeQueue or {}
+    local safeQueueFrame = CreateFrame("Frame")
+    safeQueueFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+    safeQueueFrame:SetScript("OnEvent", function()
+        if not UUF._safeQueue or #UUF._safeQueue == 0 then return end
+        for i = 1, #UUF._safeQueue do
+            local ok, err = pcall(UUF._safeQueue[i])
+            if not ok then
+                print("UnhaltedUnitFrames: error flushing safe queue - ", err)
+            end
+        end
+        UUF._safeQueue = {}
+    end)
 end
 
 function UnhaltedUnitFrames:OnEnable()
@@ -43,3 +69,56 @@ function UnhaltedUnitFrames:OnEnable()
     UUF:SpawnUnitFrame("party")
     UUF:SpawnUnitFrame("boss")
 end
+
+function UUF:GetUnitConfig(unit)
+    local normalizedUnit = UUF:GetNormalizedUnit(unit)
+    local unitConfig = UUF.db.profile.Units[normalizedUnit]
+    return unitConfig
+end
+
+function UUF:GetUnitIndicatorConfig(unit, indicatorType)
+    local unitConfig = UUF:GetUnitConfig(unit)
+    if not unitConfig or not unitConfig.Indicators then
+        return nil
+    end
+    return unitConfig.Indicators[indicatorType]
+end
+
+function UUF:QueueOrRun(fn)
+    if type(fn) ~= "function" then return end
+    if InCombatLockdown() then
+        UUF._safeQueue = UUF._safeQueue or {}
+        UUF._safeQueue[#UUF._safeQueue + 1] = fn
+    else
+        fn()
+    end
+end
+
+-- In Core.lua, add NPC-specific event tracking
+local questNpcFrame = CreateFrame("Frame")
+questNpcFrame:RegisterEvent("QUEST_ACCEPTED")
+questNpcFrame:RegisterEvent("QUEST_TURNED_IN")
+questNpcFrame:RegisterEvent("QUEST_LOG_UPDATE")
+questNpcFrame:SetScript("OnEvent", function(_, event)
+    -- Handle NPC party joins/leaves tied to specific quests
+    UUF:UpdatePartyFrames()
+end)
+
+-- Listen for unit changes that might affect party composition
+local unitEventFrame = CreateFrame("Frame")
+unitEventFrame:RegisterEvent("UNIT_FACTION")  -- NPC faction changes
+unitEventFrame:SetScript("OnEvent", function(_, event)
+    UUF:UpdatePartyFrames()
+end)
+
+-- Track temporary guardian/pet changes
+local guardianEventFrame = CreateFrame("Frame")
+guardianEventFrame:RegisterEvent("PLAYER_CONTROL_LOST")     -- When taking controlled pet
+guardianEventFrame:RegisterEvent("PLAYER_CONTROL_GAINED")   -- When releasing controlled pet
+guardianEventFrame:RegisterEvent("UNIT_PET")                -- Pet appearance/disappearance
+guardianEventFrame:RegisterEvent("COMPANION_UPDATE")        -- Companion gained/lost
+guardianEventFrame:SetScript("OnEvent", function(_, event)
+    -- Update player frame and pet frame when guardians change
+    UUF:UpdateUnitFrame(UUF.PLAYER, "player")
+    if UUF.PET then UUF:UpdateUnitFrame(UUF.PET, "pet") end
+end)
