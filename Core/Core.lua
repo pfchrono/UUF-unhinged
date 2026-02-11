@@ -105,35 +105,6 @@ function UUF:QueueOrRun(fn)
     end
 end
 
--- In Core.lua, add NPC-specific event tracking
-local questNpcFrame = CreateFrame("Frame")
-questNpcFrame:RegisterEvent("QUEST_ACCEPTED")
-questNpcFrame:RegisterEvent("QUEST_TURNED_IN")
-questNpcFrame:RegisterEvent("QUEST_LOG_UPDATE")
-questNpcFrame:SetScript("OnEvent", function(_, event)
-    -- Handle NPC party joins/leaves tied to specific quests
-    UUF:UpdatePartyFrames()
-end)
-
--- Listen for unit changes that might affect party composition
-local unitEventFrame = CreateFrame("Frame")
-unitEventFrame:RegisterEvent("UNIT_FACTION")  -- NPC faction changes
-unitEventFrame:SetScript("OnEvent", function(_, event)
-    UUF:UpdatePartyFrames()
-end)
-
--- Track temporary guardian/pet changes
-local guardianEventFrame = CreateFrame("Frame")
-guardianEventFrame:RegisterEvent("PLAYER_CONTROL_LOST")     -- When taking controlled pet
-guardianEventFrame:RegisterEvent("PLAYER_CONTROL_GAINED")   -- When releasing controlled pet
-guardianEventFrame:RegisterEvent("UNIT_PET")                -- Pet appearance/disappearance
-guardianEventFrame:RegisterEvent("COMPANION_UPDATE")        -- Companion gained/lost
-guardianEventFrame:SetScript("OnEvent", function(_, event)
-    -- Update player frame and pet frame when guardians change
-    UUF:UpdateUnitFrame(UUF.PLAYER, "player")
-    if UUF.PET then UUF:UpdateUnitFrame(UUF.PET, "pet") end
-end)
-
 local minimapPingFrame = CreateFrame("Frame")
 do
     local ok = pcall(minimapPingFrame.RegisterEvent, minimapPingFrame, "MINIMAP_PING")
