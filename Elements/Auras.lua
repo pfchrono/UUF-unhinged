@@ -42,6 +42,30 @@ local function ConfigureAuraDuration(icon, unit)
     end)
 end
 
+local function BuildAuraStyleKey(generalDB, aurasDB)
+    local shadow = generalDB.Fonts.Shadow
+    local duration = aurasDB.AuraDuration
+    local buffs = aurasDB.Buffs
+    local debuffs = aurasDB.Debuffs
+    return table.concat({
+        UUF.Media.Font or "",
+        generalDB.Fonts.FontFlag or "",
+        tostring(shadow.Enabled),
+        shadow.Colour[1] or 0, shadow.Colour[2] or 0, shadow.Colour[3] or 0, shadow.Colour[4] or 0,
+        shadow.XPos or 0, shadow.YPos or 0,
+        duration.FontSize or 0,
+        tostring(duration.ScaleByIconSize),
+        duration.Layout[1] or "", duration.Layout[2] or "", duration.Layout[3] or 0, duration.Layout[4] or 0,
+        duration.Colour[1] or 0, duration.Colour[2] or 0, duration.Colour[3] or 0,
+        buffs.Count.FontSize or 0,
+        buffs.Count.Layout[1] or "", buffs.Count.Layout[2] or "", buffs.Count.Layout[3] or 0, buffs.Count.Layout[4] or 0,
+        buffs.Count.Colour[1] or 0, buffs.Count.Colour[2] or 0, buffs.Count.Colour[3] or 0,
+        debuffs.Count.FontSize or 0,
+        debuffs.Count.Layout[1] or "", debuffs.Count.Layout[2] or "", debuffs.Count.Layout[3] or 0, debuffs.Count.Layout[4] or 0,
+        debuffs.Count.Colour[1] or 0, debuffs.Count.Colour[2] or 0, debuffs.Count.Colour[3] or 0,
+    }, "|")
+end
+
 local function StyleAuras(_, button, unit, auraType)
     if not button or not unit or not auraType then return end
     local GeneralDB = UUF.db.profile.General
@@ -257,6 +281,7 @@ end
 
 function UUF:UpdateUnitAuras(unitFrame, unit)
     if not unit or not unitFrame then return end
+    local GeneralDB = UUF.db.profile.General
     local AurasDB = UUF.db.profile.Units[UUF:GetNormalizedUnit(unit)].Auras
     if not AurasDB then return end
     local BuffsDB = AurasDB.Buffs
@@ -336,14 +361,20 @@ function UUF:UpdateUnitAuras(unitFrame, unit)
         end
     end
 
-    for _, button in ipairs(unitFrame.BuffContainer) do
-        if button and button:IsShown() then
-            RestyleAuras(_, button, unit, "HELPFUL")
+    local styleKey = BuildAuraStyleKey(GeneralDB, AurasDB)
+    local needsRestyle = unitFrame.UUFAuraStyleKey ~= styleKey
+    unitFrame.UUFAuraStyleKey = styleKey
+
+    if needsRestyle then
+        for _, button in ipairs(unitFrame.BuffContainer) do
+            if button and button:IsShown() then
+                RestyleAuras(_, button, unit, "HELPFUL")
+            end
         end
-    end
-    for _, button in ipairs(unitFrame.DebuffContainer) do
-        if button and button:IsShown() then
-            RestyleAuras(_, button, unit, "HARMFUL")
+        for _, button in ipairs(unitFrame.DebuffContainer) do
+            if button and button:IsShown() then
+                RestyleAuras(_, button, unit, "HARMFUL")
+            end
         end
     end
     if UUF.AURA_TEST_MODE == true then UUF:CreateTestAuras(unitFrame, unit) end
