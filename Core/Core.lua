@@ -33,7 +33,7 @@ function UnhaltedUnitFrames:OnInitialize()
     
     UUF._eventBus:Register("GROUP_UPDATE_BATCH", "UUF_GroupBatch", function()
         if UUF.db.profile.Units.party.SortOrder == "ROLE" then
-            UUF:CreateTestPartyFrames()
+            UUF:LayoutPartyFrames()
         end
     end)
     
@@ -223,7 +223,7 @@ function UnhaltedUnitFrames:OnGroupUpdate()
         UUF._eventBus:Dispatch("GROUP_UPDATE_BATCH")
     else
         if UUF.db and UUF.db.profile and UUF.db.profile.Units.party.SortOrder == "ROLE" then
-            UUF:CreateTestPartyFrames()
+            UUF:LayoutPartyFrames()
         end
     end
     -- Force party frame visibility update for Delves and other cases where RegisterUnitWatch may not work
